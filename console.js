@@ -1,4 +1,7 @@
-const prompt = require("prompt-sync")({ sigint: true });
+import { consoleInput } from "./social-media.js";
+import promptConfig from "prompt-sync";
+
+const prompt = promptConfig({ sigint: true });
 
 const startConsole = () => {
   let appInUse = true;
@@ -9,7 +12,7 @@ const startConsole = () => {
       console.log("Exiting app");
       appInUse = false;
     } else {
-      console.log("Try again");
+      console.log(consoleInput(command));
     }
   }
 
