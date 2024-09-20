@@ -5,7 +5,7 @@ const users = []
 /**
  * Tries to get a user by the specified username. If none is found, a falsy value is returned.
  * @param {string} username The username for the user to retrieve
- * @returns Returns the user object, or a falsy value if we couldn't find them
+ * @returns {User?} Returns the user object, or a falsy value if we couldn't find them
  */
 function getUserByUsername(username) {
   return users.find((user) => user.username === username);
@@ -66,7 +66,7 @@ class User {
   post(message) {
     this.posts.push({
       message,
-      timestamp: new Date().toShortFormat()
+      timestamp: new Date()
     })
   }
 
@@ -96,7 +96,7 @@ Date.prototype.toShortFormat = function() {
     
     const year = this.getFullYear();
     
-    return `${day} ${monthName} ${year}`;  
+    return `${day} ${monthName} ${year}, ${this.getHours().toString().padStart(2, '0')}:${this.getMinutes().toString().padStart(2, '0')}`;  
 }  
 
 
@@ -110,18 +110,18 @@ function printTimeline(users) {
   /**
    * @type {{formattedPost: string, timestamp: Date}[]}
    */
-  const allPosts = [];
+  let allPosts = [];
   for (const user of users) {
     for (const post of user.posts) {
       allPosts.push({
         timestamp: post.timestamp,
-        formattedPost: `@${user.username} at ${post.timestamp}\n${post.message}\n\n`
+        formattedPost: `@${user.username} at ${post.timestamp.toShortFormat()}\n${post.message}\n\n`
       });
     }
   }
 
   // Get the posts from all users and order chronologically from newest to oldest
-  allPosts.sort((a, b) => a.timestamp - b.timestamp);
+  allPosts = allPosts.sort((a, b) => b.timestamp - a.timestamp);
 
   // Format each post into a nice text output
   return allPosts.map(p => p.formattedPost).join('');
@@ -133,7 +133,8 @@ function printTimeline(users) {
  * @returns {string} The response to the input
  */
 function consoleInput(text) {
-  const [username, command, arg] = text.split(' ', 3)
+  const [username, command, ...argParts] = text.split(' ')
+  const arg = argParts.join(' ');
 
   if (command === '/follow') {
     const user = getUserByUsername(username)
@@ -159,6 +160,23 @@ function consoleInput(text) {
   if (command === '/timeline') {
     const user = getUserByUsername(arg);
     
+    if (!!user) {
+      return printTimeline([user]);
+    }
+
+    return "That user does not exist";
+  }
+
+  if (command === '/wall') {
+    const user = getUserByUsername(username);
+
+    if (!user) {
+      return "That user does not exist";
+    }
+
+    const usersToPrint = user.following.map(userId => getUserById(userId));
+
+    return printTimeline(usersToPrint);
   }
 }
 
