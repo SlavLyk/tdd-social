@@ -1,16 +1,16 @@
 import { consoleInput, User, printTimeline } from "./social-media";
 
-const sleep = (t) => new Promise(r => setTimeout(r, t));
+const sleep = (t) => new Promise((r) => setTimeout(r, t));
 
 describe("User object", () => {
   test("constructor generates user id", () => {
-    expect(new User("winners").username).not.toBe('');
+    expect(new User("winners").username).not.toBe("");
   });
 
   test("user can post", () => {
     const user = new User("winners");
     user.post("Hello, World!");
-      
+
     expect(user.posts).not.toHaveLength(0);
   });
 
@@ -18,7 +18,7 @@ describe("User object", () => {
     const user = new User("winner");
     const user2 = new User("winner2");
 
-    user.follow(user2)
+    user.follow(user2);
     expect(user.following).not.toHaveLength(0);
   });
 });
@@ -33,12 +33,12 @@ describe("Timeline object", () => {
 
     const result = printTimeline([user]);
 
-    console.log(result)
+    console.log(result);
 
     expect(result).toMatch(
       /@winner at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sI am the second post\s{2}@winner at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sHello, World!/
     );
-  })
+  });
 
   test("prints multiple users' timelines", async () => {
     const user1 = new User("ivan");
@@ -57,8 +57,8 @@ describe("Timeline object", () => {
     expect(result).toMatch(
       /@ivan at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sWhat a wow!\s{2}@slav at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sWe managed to get our social network working!\s{2}@ivan at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sThis is an exciting day!/
     );
-  })
-})
+  });
+});
 
 describe("console input", () => {
   test("user follows another user", () => {
@@ -68,5 +68,37 @@ describe("console input", () => {
 
     const result = consoleInput("winner /follow winner2");
     expect(result).toBe("User followed");
+  });
+
+  test("user posts", () => {
+    consoleInput("winner /post ");
+
+    const result = consoleInput("winner /follow winner2");
+    expect(result).toBe("User followed");
+  });
+
+  // /wall
+  test("user can see their wall", () => {
+    consoleInput("winner /post Hello, World!");
+    consoleInput("winner2 /post Hi there");
+    consoleInput("winner3 /post Howdy");
+
+    consoleInput("winner /follow winner2");
+    consoleInput("winner /follow winner3");
+    const result = consoleInput("winner /wall");
+    expect(result).toMatch(
+      /@winner2 at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sHi there\s{2}@winner3 at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sHowdy\s{2}/
+    );
+  });
+
+  // /timeline
+  test("user can view someone's timeline", () => {
+    consoleInput("winner /post Hello, World!");
+    consoleInput("winner2 /post Hi there");
+
+    const result = consoleInput("winner /timeline winner2");
+    expect(result).toMatch(
+      /@winner2 at \d{1,2} [A-Za-z]+ \d{4}, \d{2}:\d{2}\sHi there\s{2}/
+    );
   });
 });
